@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Dashboard - FitForge{% endblock %}
+{% block content %}
+<section class="section-pad">
+  <div class="container">
+    <p class="eyebrow">Command Center</p>
+    <h1 class="page-title">Welcome Back, {{ user.first_name|default:user.username }}</h1>
+    <div class="row g-4 mt-2">
+      <div class="col-md-3"><div class="metric-card"><span>Current BMI</span><strong>{% if latest_bmi %}{{ latest_bmi.bmi }}{% else %}--{% endif %}</strong></div></div>
+      <div class="col-md-3"><div class="metric-card"><span>Total Workouts</span><strong>{{ total_workouts }}</strong></div></div>
+      <div class="col-md-3"><div class="metric-card"><span>Calories Today</span><strong>{{ calories_today }}</strong></div></div>
+      <div class="col-md-3"><div class="metric-card"><span>Streak</span><strong>{{ streak }}</strong></div></div>
+    </div>
+    <div class="row g-4 mt-2">
+      <div class="col-lg-7"><div class="card-fit"><h2 class="section-title">BMI Trend</h2><canvas id="bmiTrend"></canvas></div></div>
+      <div class="col-lg-5"><div class="card-fit"><h2 class="section-title">Macros Today</h2><canvas id="macroChart"></canvas></div></div>
+    </div>
+    <div class="row g-4 mt-2">
+      <div class="col-lg-8">
+        <div class="card-fit">
+          <h2 class="section-title">Recent Workouts</h2>
+          <div class="table-responsive">
+            <table class="table fit-table">
+              <thead><tr><th>Date</th><th>Exercise</th><th>Sets</th><th>Reps</th><th>Weight</th></tr></thead>
+              <tbody>
+                {% for workout in recent_workouts %}
+                  <tr><td>{{ workout.date }}</td><td>{{ workout.exercise }}</td><td>{{ workout.sets }}</td><td>{{ workout.reps }}</td><td>{{ workout.weight_kg|default:"Bodyweight" }}</td></tr>
+                {% empty %}
+                  <tr><td colspan="5">No workouts yet. Log the first one.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="card-fit">
+          <h2 class="section-title">Quick Actions</h2>
+          <div class="d-grid gap-3">
+            <a class="btn btn-fit" href="{% url 'planner' %}">Generate Plan</a>
+            <a class="btn btn-outline-fit" href="{% url 'workout_add' %}">Log Workout</a>
+            <a class="btn btn-outline-fit" href="{% url 'meal_log' %}">Log Meal</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+{% block extra_js %}
+<script>
+const bmiLabels = {{ bmi_labels|safe }};
+const bmiValues = {{ bmi_values|safe }};
+const macroValues = [
+  {{ meal_totals.protein|default:0 }},
+  {{ meal_totals.carbs|default:0 }},
+  {{ meal_totals.fats|default:0 }}
+];
+new Chart(document.getElementById('bmiTrend'), {
+  type: 'line',
+  data: { labels: bmiLabels, datasets: [{ label: 'BMI', data: bmiValues, borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent'), backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-glow'), tension: .35, fill: true }] },
+  options: { responsive: true }
+});
+new Chart(document.getElementById('macroChart'), {
+  type: 'doughnut',
+  data: { labels: ['Protein', 'Carbs', 'Fats'], datasets: [{ data: macroValues, backgroundColor: [
+    getComputedStyle(document.documentElement).getPropertyValue('--accent'),
+    getComputedStyle(document.documentElement).getPropertyValue('--warning'),
+    getComputedStyle(document.documentElement).getPropertyValue('--danger')
+  ] }] },
+  options: { responsive: true }
+});
+</script>
+{% endblock %}

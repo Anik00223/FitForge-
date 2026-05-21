@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Server Error - FitForge{% endblock %}
+{% block content %}
+<section class="section-pad min-vh-100 d-flex align-items-center">
+  <div class="container text-center">
+    <p class="eyebrow">500</p>
+    <h1 class="hero-title">Bar Slipped.</h1>
+    <p class="hero-subtext mx-auto">Something failed server-side. The browser gets no traceback, just a clean reset path.</p>
+    <a class="btn btn-fit btn-lg mt-3" href="{% url 'home' %}">Home</a>
+  </div>
+</section>
+{% endblock %}

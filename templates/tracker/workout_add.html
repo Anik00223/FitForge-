@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Log Workout - FitForge{% endblock %}
+{% block content %}
+<section class="section-pad">
+  <div class="container">
+    <p class="eyebrow">Training Log</p>
+    <h1 class="page-title">Log Workout</h1>
+    <div class="card-fit">
+      <form method="post" id="workoutForm">
+        {% csrf_token %}
+        <div id="workoutRows">
+          <div class="workout-row row g-3 mb-3">
+            <div class="col-md-4"><label>Exercise</label><input name="exercise" class="form-control" required></div>
+            <div class="col-md-2"><label>Sets</label><input name="sets" class="form-control" type="number" min="1" value="3" required></div>
+            <div class="col-md-2"><label>Reps</label><input name="reps" class="form-control" type="number" min="1" value="10" required></div>
+            <div class="col-md-2"><label>Weight kg</label><input name="weight_kg" class="form-control" type="number" step="0.5"></div>
+            <div class="col-md-2"><label>Notes</label><input name="notes" class="form-control"></div>
+          </div>
+        </div>
+        <div class="d-flex gap-3 flex-wrap">
+          <button class="btn btn-outline-fit" type="button" id="addWorkoutRow">Add Another</button>
+          <button class="btn btn-fit" type="submit">Save Workout</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.getElementById('addWorkoutRow').addEventListener('click', function () {
+  const first = document.querySelector('.workout-row');
+  const clone = first.cloneNode(true);
+  clone.querySelectorAll('input').forEach(input => {
+    if (input.name === 'sets') input.value = '3';
+    else if (input.name === 'reps') input.value = '10';
+    else input.value = '';
+  });
+  document.getElementById('workoutRows').appendChild(clone);
+});
+</script>
+{% endblock %}

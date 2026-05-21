@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}AI Planner - FitForge{% endblock %}
+{% block content %}
+<section class="section-pad">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <p class="eyebrow">AI Planner</p>
+        <h1 class="page-title">Forge The Plan</h1>
+        <div class="card-fit">
+          <h2 class="section-title">Your Stats</h2>
+          <div class="stat-line"><span>Age</span><strong>{{ profile.age }}</strong></div>
+          <div class="stat-line"><span>Weight</span><strong>{{ profile.weight_kg }} kg</strong></div>
+          <div class="stat-line"><span>Height</span><strong>{{ profile.height_cm }} cm</strong></div>
+          <div class="stat-line"><span>Activity</span><strong>{{ profile.get_activity_level_display }}</strong></div>
+          <div class="stat-line"><span>Goal</span><strong>{{ profile.get_fitness_goal_display }}</strong></div>
+          <div class="stat-line"><span>Diet</span><strong>{{ profile.get_dietary_preference_display }}</strong></div>
+          {% if diet_profile %}
+            <div class="divider"></div>
+            <div class="stat-line"><span>Calories</span><strong>{{ diet_profile.daily_calories_target }}</strong></div>
+            <div class="stat-line"><span>Macros</span><strong>P {{ diet_profile.protein_g }}g / C {{ diet_profile.carbs_g }}g / F {{ diet_profile.fats_g }}g</strong></div>
+          {% endif %}
+          <a class="btn btn-outline-fit w-100 mt-4" href="{% url 'profile_setup' %}">Edit Profile</a>
+        </div>
+        <div class="card-fit mt-4">
+          <form method="post" id="plannerForm">
+            {% csrf_token %}
+            <label>Plan Type</label>
+            <div class="plan-tabs">
+              <label><input type="radio" name="plan_type" value="diet"> Diet Plan</label>
+              <label><input type="radio" name="plan_type" value="fitness"> Fitness Plan</label>
+              <label><input type="radio" name="plan_type" value="combined" checked> Combined</label>
+            </div>
+            <button class="btn btn-fit w-100 mt-4" type="submit" id="generatePlanBtn">Generate My Plan</button>
+          </form>
+          <div class="loading-panel d-none" id="plannerLoading">
+            <div class="fit-spinner"></div>
+            <span>Building your plan...</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-8">
+        {% if active_plan %}
+          <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
+            <div><p class="eyebrow">{{ active_plan.get_plan_type_display }}</p><h2 class="section-title">Generated {{ active_plan.generated_at|date:"d M Y, H:i" }}</h2></div>
+            <a class="btn btn-outline-fit" href="{% url 'plan_history' %}">History</a>
+          </div>
+          <div class="ai-output">{{ plan_html|safe }}</div>
+          <div class="card-fit mt-4">
+            <h2 class="section-title">Ask AI About This Plan</h2>
+            <form id="qaForm" data-url="{% url 'ask_followup' %}">
+              {% csrf_token %}
+              <input type="hidden" name="plan_id" value="{{ active_plan.pk }}">
+              <label for="question">Question</label>
+              <textarea class="form-control" id="question" name="question" rows="3" placeholder="Ask for swaps, progression, timing, or meal adjustments..."></textarea>
+              <button class="btn btn-fit mt-3" type="submit">Ask AI</button>
+            </form>
+            <div id="qaMessages" class="mt-4">
+              {% for qa in active_plan.qa_history.all %}
+                <div class="qa-block">
+                  <strong>Q: {{ qa.question }}</strong>
+                  <div class="ai-output small-output">{{ qa.answer|linebreaks }}</div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% else %}
+          <div class="card-fit empty-plan">
+            <i class="fa-solid fa-bolt"></i>
+            <h2 class="section-title">No Active Plan Yet</h2>
+            <p>Choose a plan type and generate your first FitForge plan. It will save automatically and appear here.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/planner.js' %}"></script>
+{% endblock %}

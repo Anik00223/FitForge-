@@ -1,0 +1,13 @@
+Django==4.2.16
+psycopg2-binary>=2.9.9
+dj-database-url==2.1.0
+python-decouple==3.8
+whitenoise==6.6.0
+redis==5.0.1
+django-redis==5.4.0
+openai==1.82.0
+Pillow>=10.2.0
+gunicorn==21.2.0
+markdownify==0.12.1
+Markdown==3.6
+django-allauth[socialaccount]==65.16.1

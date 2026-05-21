@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Profile Setup - FitForge{% endblock %}
+
+{% block content %}
+<section class="section-pad">
+  <div class="container" data-aos="fade-up">
+    <div class="row g-5 align-items-start">
+      <div class="col-lg-5 position-sticky" style="top: 100px;">
+        <p class="eyebrow">Baseline</p>
+        <h1 class="page-title">Set Your <span>Profile</span></h1>
+        <p class="hero-subtext">The AI plan gets sharper when your profile is honest. This sets the foundation for your fitness journey.</p>
+        
+        {% if targets %}
+          <div class="card-fit mt-5 border-start border-warning border-4">
+            <h3 class="section-title" style="font-size: 24px;">Calculated Targets</h3>
+            <p class="metric-number text-warning">{{ targets.calories }} <span style="font-size: 16px; color: var(--text-secondary);">kcal/day</span></p>
+            <div class="d-flex justify-content-between mt-3 text-uppercase" style="font-size: 12px; font-weight: 600;">
+                <span class="text-secondary">Protein: <span class="text-white">{{ targets.protein_g }}g</span></span>
+                <span class="text-secondary">Carbs: <span class="text-white">{{ targets.carbs_g }}g</span></span>
+                <span class="text-secondary">Fats: <span class="text-white">{{ targets.fats_g }}g</span></span>
+            </div>
+          </div>
+        {% else %}
+          <div class="card-fit mt-5 text-center p-5 bg-dark">
+              <i class="fa-solid fa-calculator text-secondary mb-3" style="font-size: 40px;"></i>
+              <p class="muted mb-0">Fill out the form to calculate your macro targets.</p>
+          </div>
+        {% endif %}
+      </div>
+      
+      <div class="col-lg-7">
+        <div class="card-fit p-4 p-md-5">
+          <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="row g-4">
+              {% for field in form %}
+                <div class="{% if field.name == 'allergies' or field.name == 'fitness_goal' or field.name == 'dietary_preference' or field.name == 'activity_level' %}col-12{% else %}col-md-6{% endif %}">
+                  <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  {{ field }}
+                  {% for error in field.errors %}
+                    <div class="field-error"><i class="fa-solid fa-circle-exclamation me-1"></i> {{ error }}</div>
+                  {% endfor %}
+                  {% if field.help_text %}
+                    <small class="text-secondary d-block mt-1">{{ field.help_text }}</small>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+            
+            <hr class="my-5 border-secondary opacity-25">
+            
+            <div class="d-flex justify-content-end">
+              <button class="btn btn-fit px-5 py-3" type="submit">Save Profile <i class="fa-solid fa-arrow-right ms-2"></i></button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

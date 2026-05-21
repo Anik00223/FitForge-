@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Page Not Found - FitForge{% endblock %}
+{% block content %}
+<section class="section-pad min-vh-100 d-flex align-items-center">
+  <div class="container text-center">
+    <p class="eyebrow">404</p>
+    <h1 class="hero-title">Wrong Rack.</h1>
+    <p class="hero-subtext mx-auto">That page is not in this gym. Head home and keep the session moving.</p>
+    <a class="btn btn-fit btn-lg mt-3" href="{% url 'home' %}">Home</a>
+  </div>
+</section>
+{% endblock %}

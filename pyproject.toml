@@ -1,0 +1,39 @@
+[project]
+name = "fitforge"
+version = "1.0.0"
+description = "AI-powered fitness and nutrition planner built with Django"
+requires-python = ">=3.11"
+license = {file = "LICENSE"}
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+src = ["apps", "core", "config"]
+
+[tool.ruff.lint]
+select = [
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "F",     # pyflakes
+    "I",     # isort
+    "B",     # flake8-bugbear
+    "UP",    # pyupgrade
+    "S",     # flake8-bandit (security)
+    "T20",   # flake8-print
+    "SIM",   # flake8-simplify
+]
+ignore = [
+    "S101",  # allow assert in tests
+    "S105",  # allow hardcoded password variable names (for test fixtures)
+    "S106",  # allow hardcoded password arguments (for test fixtures)
+    "E501",  # line too long — handled by formatter
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["S101", "S105", "S106"]
+"**/migrations/**" = ["E501"]
+"config/settings/**" = ["F403", "F405"]  # allow wildcard imports in settings
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="container" data-aos="fade-up">
+        <p class="eyebrow">Forge Your Legacy</p>
+        <h1 class="hero-title">
+            Unleash Your <span>True Potential</span>
+        </h1>
+        <p class="hero-subtext mb-5">
+            FitForge uses advanced AI to craft personalized workout routines and nutrition plans that adapt to your progress. No generic plans. Just results.
+        </p>
+        <div class="d-flex gap-3 flex-wrap">
+            <a href="{% url 'account_signup' %}" class="btn btn-fit">Start For Free</a>
+            <a href="#features" class="btn btn-outline-fit">Discover Features</a>
+        </div>
+        
+        <div class="stat-bar" data-aos="fade-up" data-aos-delay="200">
+            <div>
+                <strong>10k+</strong>
+                <span>Active Users</span>
+            </div>
+            <div>
+                <strong>50k+</strong>
+                <span>AI Plans Generated</span>
+            </div>
+            <div>
+                <strong>98%</strong>
+                <span>Goal Achievement</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="section-pad alt-section">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <p class="eyebrow justify-content-center">Why FitForge</p>
+            <h2 class="section-title">The Ultimate <span>Arsenal</span></h2>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="card-fit h-100 text-center">
+                    <i class="fa-solid fa-microchip feature-icon"></i>
+                    <h3 class="h4 mb-3" style="font-family: 'Bebas Neue'; font-size: 28px;">AI-Powered Plans</h3>
+                    <p class="muted mb-0">Our AI analyzes your body metrics and goals to generate optimized training blocks and macro splits.</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="card-fit h-100 text-center">
+                    <i class="fa-solid fa-chart-line feature-icon"></i>
+                    <h3 class="h4 mb-3" style="font-family: 'Bebas Neue'; font-size: 28px;">Precision Tracking</h3>
+                    <p class="muted mb-0">Log workouts, track BMI, and monitor your caloric intake with professional-grade analytics.</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="card-fit h-100 text-center">
+                    <i class="fa-solid fa-fire-flame-curved feature-icon"></i>
+                    <h3 class="h4 mb-3" style="font-family: 'Bebas Neue'; font-size: 28px;">Dynamic Adaptation</h3>
+                    <p class="muted mb-0">As your weight and strength change, your nutrition targets and workout volumes automatically adjust.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- BMI Calculator Section -->
+<section class="section-pad">
+    <div class="container">
+        <div class="row g-5 align-items-center">
+            <div class="col-lg-6" data-aos="fade-right">
+                <p class="eyebrow">Know Your Stats</p>
+                <h2 class="section-title mb-4">Calculate Your <span>Baseline</span></h2>
+                <p class="muted mb-4">Before you can forge a new physique, you need to know exactly where you stand. Use our interactive calculator to find your starting point.</p>
+                
+                <div class="bmi-widget card-fit p-4 mt-4">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label>Weight (kg)</label>
+                            <input type="number" id="calcWeight" class="form-control" value="75">
+                        </div>
+                        <div class="col-6">
+                            <label>Height (cm)</label>
+                            <input type="number" id="calcHeight" class="form-control" value="175">
+                        </div>
+                    </div>
+                    <div class="bmi-result mt-4">
+                        <span id="calcBmiValue">24.5</span>
+                        <div>
+                            <span id="calcBmiCategory" class="fit-badge badge-success">Normal Weight</span>
+                            <div class="text-secondary small mt-1" id="calcBmiHint">Perfect baseline for recomposition.</div>
+                        </div>
+                    </div>
+                    <div class="bmi-gauge-container">
+                        <div id="calcBmiGauge" class="bmi-gauge-fill" style="width: 45%;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="row g-4">
+                    <div class="col-sm-6">
+                        <div class="step-card h-100">
+                            <span>01</span>
+                            <h4 style="font-family: 'Bebas Neue'; letter-spacing: 1px;">Measure</h4>
+                            <p class="muted small mb-0">Input your stats to establish your metabolic baseline.</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="step-card h-100">
+                            <span>02</span>
+                            <h4 style="font-family: 'Bebas Neue'; letter-spacing: 1px;">Generate</h4>
+                            <p class="muted small mb-0">Let our AI build your custom training block.</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="step-card h-100">
+                            <span>03</span>
+                            <h4 style="font-family: 'Bebas Neue'; letter-spacing: 1px;">Execute</h4>
+                            <p class="muted small mb-0">Hit the gym, track your reps, and log your meals.</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="step-card h-100">
+                            <span>04</span>
+                            <h4 style="font-family: 'Bebas Neue'; letter-spacing: 1px;">Adapt</h4>
+                            <p class="muted small mb-0">Recalculate targets as your body composition changes.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Pricing Section -->
+<section id="pricing" class="section-pad alt-section">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <p class="eyebrow justify-content-center">Memberships</p>
+            <h2 class="section-title">Choose Your <span>Path</span></h2>
+        </div>
+        
+        <div class="row g-4 justify-content-center">
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="card-fit pricing-card h-100">
+                    <h3 class="section-title" style="font-size: 28px;">Recruit</h3>
+                    <p class="muted">Perfect for beginners</p>
+                    <div class="price">Free<span>/mo</span></div>
+                    <ul class="pricing-features">
+                        <li><i class="fa-solid fa-check"></i> Basic workout logging</li>
+                        <li><i class="fa-solid fa-check"></i> BMI tracking</li>
+                        <li><i class="fa-solid fa-check"></i> Static calorie targets</li>
+                        <li class="muted"><i class="fa-solid fa-xmark"></i> AI workout generation</li>
+                    </ul>
+                    <a href="{% url 'account_signup' %}" class="btn btn-outline-fit w-100">Start Free</a>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                <div class="card-fit pricing-card featured h-100">
+                    <div class="position-absolute top-0 end-0 p-2"><span class="fit-badge" style="background:#000;color:var(--accent);">Popular</span></div>
+                    <h3 class="section-title" style="font-size: 28px;">Elite</h3>
+                    <p class="muted">Full AI capabilities</p>
+                    <div class="price">$9<span>/mo</span></div>
+                    <ul class="pricing-features">
+                        <li><i class="fa-solid fa-check"></i> Unlimited AI workout plans</li>
+                        <li><i class="fa-solid fa-check"></i> AI meal plan generation</li>
+                        <li><i class="fa-solid fa-check"></i> Dynamic macro adjustments</li>
+                        <li><i class="fa-solid fa-check"></i> Advanced analytics</li>
+                    </ul>
+                    <a href="{% url 'account_signup' %}" class="btn btn-outline-fit w-100">Get Elite</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="section-pad bg-image-section" style="background-image: url('{% static 'images/gym_interior.png' %}'); text-align: center;">
+    <div class="container" data-aos="zoom-in">
+        <h2 class="hero-title" style="font-size: 60px;">Ready to <span>Transform?</span></h2>
+        <p class="hero-subtext mx-auto mb-4">Stop guessing. Start tracking. Let AI guide you to your best physique.</p>
+        <a href="{% url 'account_signup' %}" class="btn btn-fit btn-lg">Create Free Account</a>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Simple interactive BMI calculator for homepage
+    const weightInput = document.getElementById('calcWeight');
+    const heightInput = document.getElementById('calcHeight');
+    const valSpan = document.getElementById('calcBmiValue');
+    const catSpan = document.getElementById('calcBmiCategory');
+    const hintSpan = document.getElementById('calcBmiHint');
+    const gauge = document.getElementById('calcBmiGauge');
+
+    function updateCalc() {
+        const w = parseFloat(weightInput.value);
+        const h = parseFloat(heightInput.value);
+        if(!w || !h || h <= 0) return;
+
+        const hm = h / 100;
+        const bmi = w / (hm * hm);
+        valSpan.textContent = bmi.toFixed(1);
+
+        let cat, color, hint, pct;
+        if (bmi < 18.5) { 
+            cat = 'Underweight'; color = 'var(--info)'; 
+            hint = 'Focus on caloric surplus and heavy lifting.';
+            pct = 15 + (bmi - 10) * 2;
+        } else if (bmi < 25) { 
+            cat = 'Normal Weight'; color = 'var(--accent)'; 
+            hint = 'Perfect baseline for recomposition or lean bulking.';
+            pct = 35 + (bmi - 18.5) * 3;
+        } else if (bmi < 30) { 
+            cat = 'Overweight'; color = 'var(--warning)'; 
+            hint = 'Slight caloric deficit recommended.';
+            pct = 60 + (bmi - 25) * 2;
+        } else { 
+            cat = 'Obese'; color = 'var(--danger)'; 
+            hint = 'Focus on sustainable deficit and cardio.';
+            pct = Math.min(100, 80 + (bmi - 30));
+        }
+
+        catSpan.textContent = cat;
+        catSpan.style.color = color;
+        catSpan.style.borderColor = color;
+        catSpan.style.background = `rgba(${color === 'var(--accent)' ? '255,184,0' : (color === 'var(--danger)' ? '255,68,68' : (color === 'var(--warning)' ? '255,170,0' : '77,181,255'))}, 0.15)`;
+        
+        hintSpan.textContent = hint;
+        gauge.style.background = color;
+        gauge.style.width = Math.max(5, pct) + '%';
+    }
+
+    weightInput.addEventListener('input', updateCalc);
+    heightInput.addEventListener('input', updateCalc);
+    updateCalc();
+</script>
+{% endblock %}

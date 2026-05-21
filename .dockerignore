@@ -1,0 +1,16 @@
+.git
+.env
+.venv
+venv
+.pyuser
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.log
+db.sqlite3
+staticfiles
+media
+.DS_Store
+node_modules
+.docker-config

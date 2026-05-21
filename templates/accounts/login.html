@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load socialaccount %}
+
+{% block title %}Login - FitForge{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+  <div class="container" data-aos="fade-up">
+    <div class="auth-card">
+      <p class="eyebrow justify-content-center">Welcome Back</p>
+      <h1 class="page-title text-center" style="font-size: 36px;">Enter the <span>Forge</span></h1>
+      
+      <!-- Social Login Buttons
+      <div class="mt-4 mb-4">
+        <a href="{% provider_login_url 'google' %}" class="btn btn-social btn-google">
+          <i class="fa-brands fa-google"></i> Continue with Google
+        </a>
+        <a href="{% provider_login_url 'microsoft' %}" class="btn btn-social btn-microsoft">
+          <i class="fa-brands fa-microsoft"></i> Continue with Microsoft
+        </a>
+        <a href="{% provider_login_url 'apple' %}" class="btn btn-social btn-apple">
+          <i class="fa-brands fa-apple"></i> Continue with Apple
+        </a>
+      </div>
+      -->
+
+      <div class="divider"><span>or login with email</span></div>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="mb-3">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% for error in field.errors %}
+              <div class="field-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        {% endfor %}
+        
+        {% if form.non_field_errors %}
+          <div class="field-error mb-3 p-2 bg-danger bg-opacity-10 rounded text-center">
+            {{ form.non_field_errors.0 }}
+          </div>
+        {% endif %}
+        
+        <button class="btn btn-fit w-100 mt-2" type="submit">Login</button>
+      </form>
+      
+      <p class="muted mt-4 text-center">New here? <a href="{% url 'account_signup' %}">Create an account</a></p>
+    </div>
+  </div>
+</section>
+{% endblock %}

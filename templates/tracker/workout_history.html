@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Workout History - FitForge{% endblock %}
+{% block content %}
+<section class="section-pad">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+      <div><p class="eyebrow">Training Log</p><h1 class="page-title">Workout History</h1></div>
+      <a class="btn btn-fit" href="{% url 'workout_add' %}">Log Workout</a>
+    </div>
+    {% for date, logs in grouped_logs.items %}
+      <div class="card-fit mt-4">
+        <h2 class="section-title">{{ date }}</h2>
+        <div class="table-responsive">
+          <table class="table fit-table">
+            <thead><tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Weight</th><th>Notes</th><th></th></tr></thead>
+            <tbody>
+              {% for log in logs %}
+                <tr>
+                  <td>{{ log.exercise }}</td>
+                  <td>{{ log.sets }}</td>
+                  <td>{{ log.reps }}</td>
+                  <td>{{ log.weight_kg|default:"Bodyweight" }}</td>
+                  <td>{{ log.notes|default:"-" }}</td>
+                  <td>
+                    <form method="post" action="{% url 'workout_delete' log.pk %}">
+                      {% csrf_token %}
+                      <button class="btn btn-sm btn-outline-fit" type="submit">Delete</button>
+                    </form>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    {% empty %}
+      <div class="card-fit mt-4">No workout logs yet.</div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Log BMI - FitForge{% endblock %}
+{% block content %}
+<section class="section-pad">
+  <div class="container">
+    <div class="row g-4 align-items-start">
+      <div class="col-lg-5">
+        <p class="eyebrow">Body Metrics</p>
+        <h1 class="page-title">Log BMI</h1>
+        <div class="card-fit">
+          <div class="bmi-result">
+            <span id="bmiValue">--</span>
+            <span id="bmiCategory" class="fit-badge badge-info">Waiting</span>
+          </div>
+          <p class="muted mt-3">This preview updates as you type. Saving also updates your current profile weight and height.</p>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="card-fit">
+          <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="row g-3">
+              <div class="col-md-6"><label for="{{ form.weight_kg.id_for_label }}">Weight kg</label>{{ form.weight_kg }}</div>
+              <div class="col-md-6"><label for="{{ form.height_cm.id_for_label }}">Height cm</label>{{ form.height_cm }}</div>
+            </div>
+            {% for field in form %}{% for error in field.errors %}<div class="field-error">{{ error }}</div>{% endfor %}{% endfor %}
+            <button class="btn btn-fit mt-4" type="submit">Save BMI</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/bmi_calc.js' %}"></script>
+{% endblock %}
