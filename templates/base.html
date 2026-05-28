@@ -24,8 +24,7 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 
     {% block extra_css %}{% endblock %}
 </head>
@@ -35,7 +34,7 @@
             <a class="navbar-brand" href="{% url 'home' %}">
                 <i class="fa-solid fa-dumbbell"></i> FitForge
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
@@ -92,9 +91,9 @@
                     </a>
                     <p class="muted mt-3 pe-4">The ultimate AI-powered fitness and nutrition platform. Train harder, eat smarter, and forge your best self with intelligent planning.</p>
                     <div class="d-flex gap-3 mt-4">
-                        <a href="#" class="theme-toggle"><i class="fa-brands fa-instagram"></i></a>
-                        <a href="#" class="theme-toggle"><i class="fa-brands fa-twitter"></i></a>
-                        <a href="#" class="theme-toggle"><i class="fa-brands fa-youtube"></i></a>
+                        <a href="#" class="theme-toggle" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" class="theme-toggle" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></a>
+                        <a href="#" class="theme-toggle" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
                     </div>
                 </div>
                 <div class="col-lg-2 col-md-4">
@@ -120,7 +119,7 @@
                     <p class="muted">Get fitness tips and AI prompts delivered weekly.</p>
                     <form class="d-flex mt-3">
                         <input type="email" class="form-control" placeholder="Email Address">
-                        <button class="btn btn-fit px-3" type="button"><i class="fa-solid fa-arrow-right"></i></button>
+                        <button class="btn btn-fit px-3" type="button" aria-label="Subscribe"><i class="fa-solid fa-arrow-right"></i></button>
                     </form>
                 </div>
             </div>

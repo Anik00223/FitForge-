@@ -5,7 +5,7 @@ from decouple import config
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-SECRET_KEY = config("SECRET_KEY", default="dev-secret-key-change-me-please-fitforge-local-only-12345")
+SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", default=False, cast=bool)
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost,127.0.0.1,0.0.0.0").split(",")
 CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default="http://localhost,http://127.0.0.1").split(",")
@@ -82,7 +82,7 @@ CACHES = {
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
 SESSION_COOKIE_AGE = 86400 * 7
-SESSION_SAVE_EVERY_REQUEST = True
+SESSION_SAVE_EVERY_REQUEST = False
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_HTTPONLY = True
 
@@ -117,6 +117,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_PASSWORD_VALIDATORS = [
     {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+    },
+    {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
         "OPTIONS": {"min_length": 8},
     },
@@ -126,7 +129,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 NVIDIA_API_KEY = config("NVIDIA_API_KEY", default="")
 NVIDIA_BASE_URL = config("NVIDIA_BASE_URL", default="https://integrate.api.nvidia.com/v1")
-NVIDIA_MODEL = config("NVIDIA_MODEL", default="meta/llama-3.3-70b-instruct")
+NVIDIA_MODEL = config("NVIDIA_MODEL", default="meta/llama-3.1-8b-instruct")
 
 # ---------- django-allauth settings ----------
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True

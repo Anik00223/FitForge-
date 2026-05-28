@@ -10,7 +10,7 @@ class TrackerViewsTest(TestCase):
 
     def test_dashboard_access(self):
         response = self.client.get(reverse("dashboard"))
-        self.assertEqual(response.status_code, 200)
+        self.assertRedirects(response, reverse("profile_setup"))
 
     def test_bmi_add_view_get(self):
         response = self.client.get(reverse("bmi_add"))

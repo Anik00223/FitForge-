@@ -14,7 +14,7 @@ class NutritionViewsTest(TestCase):
 
     def test_meal_log_view_post(self):
         response = self.client.post(reverse("meal_log"), {
-            "meal_type": "Breakfast",
+            "meal_type": "breakfast",
             "food_name": "Oats",
             "calories": 300,
             "protein_g": 10,

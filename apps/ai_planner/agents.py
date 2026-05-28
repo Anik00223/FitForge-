@@ -36,7 +36,7 @@ def _client():
     return OpenAI(base_url=settings.NVIDIA_BASE_URL, api_key=settings.NVIDIA_API_KEY)
 
 
-def _run_agent(system_prompt: str, prompt: str, max_retries: int = 2) -> str:
+def _run_agent(system_prompt: str, prompt: str, max_retries: int = 1) -> str:
     client = _client()
     for attempt in range(max_retries):
         try:
@@ -48,7 +48,7 @@ def _run_agent(system_prompt: str, prompt: str, max_retries: int = 2) -> str:
                 ],
                 temperature=0.55,
                 top_p=0.9,
-                timeout=90.0,  # 90 second timeout for long plans
+                timeout=45.0,  # 45 second timeout for fast model
             )
             return response.choices[0].message.content.strip()
         except (APITimeoutError, RateLimitError) as e:

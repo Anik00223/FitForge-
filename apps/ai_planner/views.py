@@ -1,6 +1,9 @@
+import logging
+from typing import Any
+
 import markdown
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from apps.ai_planner.agents import (
@@ -13,19 +16,23 @@ from apps.ai_planner.models import GeneratedPlan, PlanQA
 from core.decorators import login_required_custom
 from core.rate_limit import rate_limit
 
+logger = logging.getLogger(__name__)
 
-def _user_data(user):
-    profile = user.profile
+
+def _user_data(user) -> dict[str, Any]:
+    profile = getattr(user, "profile", None)
+    if not profile:
+        return {}
     diet = getattr(user, "diet_profile", None)
     return {
-        "age": profile.age,
-        "sex": profile.get_sex_display() if profile.sex else "N/A",
-        "weight_kg": profile.weight_kg,
-        "height_cm": profile.height_cm,
-        "activity_level": profile.get_activity_level_display() if profile.activity_level else "N/A",
-        "fitness_goal": profile.get_fitness_goal_display() if profile.fitness_goal else "N/A",
-        "dietary_preference": profile.get_dietary_preference_display(),
-        "allergies": profile.allergies,
+        "age": getattr(profile, "age", None),
+        "sex": profile.get_sex_display() if getattr(profile, "sex", None) else "N/A",
+        "weight_kg": getattr(profile, "weight_kg", None),
+        "height_cm": getattr(profile, "height_cm", None),
+        "activity_level": profile.get_activity_level_display() if getattr(profile, "activity_level", None) else "N/A",
+        "fitness_goal": profile.get_fitness_goal_display() if getattr(profile, "fitness_goal", None) else "N/A",
+        "dietary_preference": profile.get_dietary_preference_display() if hasattr(profile, "get_dietary_preference_display") else "N/A",
+        "allergies": getattr(profile, "allergies", ""),
         "daily_calories": diet.daily_calories_target if diet else None,
         "protein_g": diet.protein_g if diet else None,
         "carbs_g": diet.carbs_g if diet else None,
@@ -33,8 +40,18 @@ def _user_data(user):
     }
 
 
-def _render_markdown(text):
-    return markdown.markdown(text, extensions=["tables", "fenced_code", "nl2br"])
+import bleach
+
+
+_ALLOWED_TAGS = ["p", "br", "strong", "em", "ul", "ol", "li", "h1", "h2", "h3",
+                 "h4", "h5", "h6", "table", "thead", "tbody", "tr", "th", "td",
+                 "code", "pre", "blockquote", "a"]
+_ALLOWED_ATTRS = {"a": ["href", "title"], "*": ["class"]}
+
+
+def _render_markdown(text: str) -> str:
+    html = markdown.markdown(text, extensions=["tables", "fenced_code", "nl2br"])
+    return bleach.clean(html, tags=_ALLOWED_TAGS, attributes=_ALLOWED_ATTRS, strip=True)
 
 
 @login_required_custom
@@ -50,17 +67,24 @@ def planner_view(request):
 
     if request.method == "POST":
         plan_type = request.POST.get("plan_type", "combined")
-        data = _user_data(request.user)
-        if plan_type == "diet":
-            content = generate_diet_plan(data)
-        elif plan_type == "fitness":
-            content = generate_fitness_plan(data)
-        else:
+        if plan_type not in ("diet", "fitness", "combined"):
             plan_type = "combined"
-            content = generate_combined_plan(data)
+        data = _user_data(request.user)
+        content = ""
+        try:
+            if plan_type == "diet":
+                content = generate_diet_plan(data)
+            elif plan_type == "fitness":
+                content = generate_fitness_plan(data)
+            else:
+                content = generate_combined_plan(data)
+        except Exception:
+            logger.exception("AI plan generation failed for user=%s", request.user.pk)
+            messages.error(request, "Plan generation failed due to an internal error. Please try again.")
+            return redirect("planner")
 
-        if "failed:" in content.lower():
-            messages.error(request, content)
+        if not content or "failed:" in content.lower():
+            messages.error(request, content or "Plan generation returned empty output.")
             return redirect("planner")
 
         GeneratedPlan.objects.filter(user=request.user).update(is_active=False)

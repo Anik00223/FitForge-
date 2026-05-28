@@ -137,7 +137,6 @@ a:hover { color: var(--accent-dark); }
   background-image: url('../images/hero_bg.png');
   background-size: cover;
   background-position: center top;
-  background-attachment: fixed;
 }
 
 .hero-overlay {

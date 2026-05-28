@@ -11,3 +11,4 @@ gunicorn==21.2.0
 markdownify==0.12.1
 Markdown==3.6
 django-allauth[socialaccount]==65.16.1
+bleach==6.1.0

@@ -1,7 +1,7 @@
 services:
   redis-showcase:
     image: redis:7-alpine
-    restart: always
+    restart: unless-stopped
     ports:
       - "6381:6379"
     healthcheck:
@@ -12,7 +12,7 @@ services:
 
   web-showcase:
     build: .
-    restart: always
+    restart: unless-stopped
     ports:
       - "8011:8000"
     env_file:
@@ -31,7 +31,7 @@ services:
 
   nginx-showcase:
     image: nginx:alpine
-    restart: always
+    restart: unless-stopped
     ports:
       - "8081:80"
     volumes:

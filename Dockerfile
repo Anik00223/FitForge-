@@ -18,7 +18,7 @@ RUN pip install --no-cache-dir --upgrade pip \
 COPY . .
 
 RUN chmod +x /app/docker-entrypoint.sh \
- && python manage.py collectstatic --noinput
+ && SECRET_KEY=dummy-for-build python manage.py collectstatic --noinput
 
 EXPOSE 8000
 

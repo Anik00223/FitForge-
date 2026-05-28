@@ -99,15 +99,18 @@ def workout_add_view(request):
         for index, exercise in enumerate(exercises):
             if not exercise.strip():
                 continue
-            WorkoutLog.objects.create(
-                user=request.user,
-                exercise=exercise.strip(),
-                sets=int(sets[index] or 1),
-                reps=int(reps[index] or 1),
-                weight_kg=float(weights[index]) if weights[index] else None,
-                notes=notes[index].strip() if index < len(notes) else "",
-            )
-            created += 1
+            try:
+                WorkoutLog.objects.create(
+                    user=request.user,
+                    exercise=exercise.strip(),
+                    sets=int(sets[index] or 1),
+                    reps=int(reps[index] or 1),
+                    weight_kg=float(weights[index]) if weights[index] else None,
+                    notes=notes[index].strip() if index < len(notes) else "",
+                )
+                created += 1
+            except (ValueError, IndexError):
+                continue
         if created:
             messages.success(request, f"Logged {created} workout exercise{'s' if created != 1 else ''}.")
             return redirect("workout_history")

@@ -84,11 +84,11 @@ def seed():
 
     print("Generating Meal Logs...")
     meals = [
-        ("Breakfast", "Oats with Whey Protein and Berries", 450, 35, 55, 10),
-        ("Lunch", "Chicken Breast with Rice and Broccoli", 600, 55, 65, 12),
-        ("Snack", "Greek Yogurt with Almonds", 250, 20, 15, 12),
-        ("Dinner", "Salmon with Sweet Potato and Asparagus", 550, 45, 45, 22),
-        ("Snack", "Casein Shake", 150, 25, 5, 2),
+        ("breakfast", "Oats with Whey Protein and Berries", 450, 35, 55, 10),
+        ("lunch", "Chicken Breast with Rice and Broccoli", 600, 55, 65, 12),
+        ("snack", "Greek Yogurt with Almonds", 250, 20, 15, 12),
+        ("dinner", "Salmon with Sweet Potato and Asparagus", 550, 45, 45, 22),
+        ("snack", "Casein Shake", 150, 25, 5, 2),
     ]
     
     for m in meals:
