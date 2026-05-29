@@ -42,6 +42,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "core.supabase_auth.SupabaseAuthMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "allauth.account.middleware.AccountMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -130,6 +131,11 @@ AUTH_PASSWORD_VALIDATORS = [
 NVIDIA_API_KEY = config("NVIDIA_API_KEY", default="")
 NVIDIA_BASE_URL = config("NVIDIA_BASE_URL", default="https://integrate.api.nvidia.com/v1")
 NVIDIA_MODEL = config("NVIDIA_MODEL", default="meta/llama-3.1-8b-instruct")
+
+# Supabase (frontend publishable key and URL)
+SUPABASE_URL = config("NEXT_PUBLIC_SUPABASE_URL", default="")
+SUPABASE_PUBLISHABLE_KEY = config("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", default="")
+SUPABASE_SERVICE_ROLE_KEY = config("SUPABASE_SERVICE_ROLE_KEY", default="")
 
 # ---------- django-allauth settings ----------
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True

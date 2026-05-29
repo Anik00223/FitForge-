@@ -197,6 +197,56 @@
             }
         });
     </script>
+
+    <!-- Expose Supabase keys to the browser and initialize the client -->
+    <script>
+        window.SUPABASE_URL = "{{ SUPABASE_URL|escapejs }}";
+        window.SUPABASE_PUBLISHABLE_KEY = "{{ SUPABASE_PUBLISHABLE_KEY|escapejs }}";
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+    <script>
+        if (window.SUPABASE_URL && window.SUPABASE_PUBLISHABLE_KEY && typeof supabase !== 'undefined') {
+            window.supabaseClient = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_PUBLISHABLE_KEY);
+            try {
+                // On page load exchange an existing Supabase session for a Django session
+                (async () => {
+                    if (window.supabaseClient && window.supabaseClient.auth && typeof window.supabaseClient.auth.getSession === 'function') {
+                        const { data } = await window.supabaseClient.auth.getSession();
+                        const session = data?.session || data;
+                        if (session && session.access_token) {
+                            await fetch("{% url 'supabase_login' %}", {
+                                method: 'POST',
+                                credentials: 'include',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({ access_token: session.access_token }),
+                            });
+                        }
+                    }
+                })();
+
+                // Listen for auth events and exchange the token when sign-in occurs
+                if (window.supabaseClient && window.supabaseClient.auth && typeof window.supabaseClient.auth.onAuthStateChange === 'function') {
+                    window.supabaseClient.auth.onAuthStateChange(async (event, session) => {
+                        if (session && session.access_token) {
+                            try {
+                                await fetch("{% url 'supabase_login' %}", {
+                                    method: 'POST',
+                                    credentials: 'include',
+                                    headers: {'Content-Type': 'application/json'},
+                                    body: JSON.stringify({ access_token: session.access_token }),
+                                });
+                            } catch (err) {
+                                console.error('Supabase login exchange failed', err);
+                            }
+                        }
+                    });
+                }
+            } catch (err) {
+                console.warn('Supabase client exchange init failed', err);
+            }
+        }
+    </script>
+
     <script src="{% static 'js/theme.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>

@@ -31,6 +31,11 @@ def login_view(request):
 
 
 from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from core.supabase_client import get_user_from_token
+from core.supabase_auth import get_or_create_user
 
 @require_POST
 def logout_view(request):
@@ -73,3 +78,34 @@ def profile_setup(request):
         messages.success(request, "Profile saved. Your plan targets are ready.")
         return redirect("planner")
     return render(request, "accounts/profile_setup.html", {"form": form, "targets": targets})
+
+
+@csrf_exempt
+@require_POST
+def supabase_login(request):
+    """Exchange a Supabase access token for a Django session.
+
+    Expects JSON POST: {"access_token": "..."}
+    Returns JSON success or an error code.
+    """
+    access_token = None
+    try:
+        payload = json.loads(request.body.decode() or "{}")
+        access_token = payload.get("access_token")
+    except Exception:
+        access_token = request.POST.get("access_token")
+
+    if not access_token:
+        return JsonResponse({"error": "access_token required"}, status=400)
+
+    sup_user = get_user_from_token(access_token, service_role=True)
+    if not sup_user:
+        return JsonResponse({"error": "invalid_token"}, status=401)
+
+    user = get_or_create_user(sup_user)
+    if not user:
+        return JsonResponse({"error": "user_creation_failed"}, status=500)
+
+    # Create a Django session for the user
+    login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+    return JsonResponse({"success": True})

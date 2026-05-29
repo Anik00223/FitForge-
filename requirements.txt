@@ -12,3 +12,5 @@ markdownify==0.12.1
 Markdown==3.6
 django-allauth[socialaccount]==65.16.1
 bleach==6.1.0
+requests>=2.31.0
+supabase>=1.4.0
