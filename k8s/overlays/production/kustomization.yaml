@@ -1,0 +1,66 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: fitforge-prod
+
+resources:
+  - ../../base
+
+namePrefix: prod-
+
+# Live image tag is supplied by CI/CD at build time.  Override on the
+# command line with ``--images fitforge=registry/fitforge:$GIT_SHA``.
+images:
+  - name: fitforge
+    newName: registry.fitforge.app/fitforge
+    newTag: latest
+
+# Replica counts and resource limits for the production tier.
+patches:
+  - target:
+      kind: Deployment
+      name: fitforge-web
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 3
+  - target:
+      kind: Deployment
+      name: fitforge-worker
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 2
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: fitforge-web
+    patch: |
+      - op: replace
+        path: /spec/minReplicas
+        value: 3
+      - op: replace
+        path: /spec/maxReplicas
+        value: 20
+  - target:
+      kind: Ingress
+      name: fitforge
+    patch: |
+      - op: replace
+        path: /spec/rules/0/host
+        value: fitforge.app
+      - op: replace
+        path: /spec/tls/0/hosts/0
+        value: fitforge.app
+      - op: replace
+        path: /spec/tls/0/secretName
+        value: fitforge-prod-tls
+  - target:
+      kind: ConfigMap
+      name: fitforge-config
+    patch: |
+      - op: replace
+        path: /data/SENTRY_ENVIRONMENT
+        value: production
+      - op: replace
+        path: /data/LOG_LEVEL
+        value: WARNING

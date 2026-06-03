@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fitforge-config
+  labels:
+    app.kubernetes.io/name: fitforge
+    app.kubernetes.io/component: config
+data:
+  DJANGO_SETTINGS_MODULE: "config.settings.production"
+  PORT: "8000"
+  LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+  CSP_UPGRADE_INSECURE_REQUESTS: "true"
+  ENABLE_PROMETHEUS: "true"
+  USE_CELERY_BEAT: "false"
+  PYTHONUNBUFFERED: "1"
+  PYTHONDONTWRITEBYTECODE: "1"
+  NVIDIA_BASE_URL: "https://integrate.api.nvidia.com/v1"
+  NVIDIA_MODEL: "meta/llama-3.3-70b-instruct"
+  ACCOUNT_EMAIL_VERIFICATION: "optional"
+  SOCIALACCOUNT_LOGIN_ON_GET: "True"
+  SOCIALACCOUNT_AUTO_SIGNUP: "True"
+  SOCIALACCOUNT_STORE_TOKENS: "True"
+  SENTRY_ENVIRONMENT: "production"
+  SENTRY_TRACES_SAMPLE_RATE: "0.1"
+  SENTRY_PROFILES_SAMPLE_RATE: "0.0"
+  SENTRY_SEND_DEFAULT_PII: "False"

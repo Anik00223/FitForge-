@@ -1,0 +1,42 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: fitforge-web
+  labels:
+    app.kubernetes.io/name: fitforge
+    app.kubernetes.io/component: web
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: fitforge
+      app.kubernetes.io/component: web
+  policyTypes: ["Ingress", "Egress"]
+  ingress:
+    - from:
+        - namespaceSelector: {}
+      ports:
+        - port: 8000
+          protocol: TCP
+  egress:
+    # DNS
+    - to: [{ namespaceSelector: {} }]
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    # Postgres
+    - to: []
+      ports:
+        - port: 5432
+          protocol: TCP
+    # Redis
+    - to: []
+      ports:
+        - port: 6379
+          protocol: TCP
+    # HTTPS for outbound API calls (NVIDIA, Sentry, OAuth)
+    - to: []
+      ports:
+        - port: 443
+          protocol: TCP

@@ -1,0 +1,37 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fitforge
+  labels:
+    app.kubernetes.io/name: fitforge
+    app.kubernetes.io/component: web
+  annotations:
+    # cert-manager: create the certificate automatically.
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    # Force HTTPS.
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "20m"
+    # Tighten timeouts to match gunicorn's --timeout.
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    # Pass the original protocol and request id to the upstream.
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header X-Request-ID $request_id;
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - fitforge.example.com
+      secretName: fitforge-tls
+  rules:
+    - host: fitforge.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: fitforge-web
+                port:
+                  number: 80

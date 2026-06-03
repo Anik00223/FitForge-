@@ -1,16 +1,80 @@
+# Version control
 .git
+.gitignore
+.gitattributes
+
+# Secrets & environment
 .env
+.env.*
+!.env.example
+!.env.docker.example
+!.env.showcase
+*.pem
+*.key
+*.crt
+
+# Python
 .venv
 venv
-.pyuser
 __pycache__
 *.pyc
 *.pyo
 *.pyd
-*.log
+*.pdb
+.pytest_cache
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.pytype/
+pip-wheel-metadata/
+*.egg-info/
+build/
+dist/
+
+# Django
 db.sqlite3
-staticfiles
-media
-.DS_Store
-node_modules
+db.sqlite3-journal
+staticfiles/
+media/
+local_settings.py
+
+# Local dev helpers
 .docker-config
+.pyuser
+scripts/backups/
+
+# Frontend / node
+node_modules
+.npm
+.yarn
+.pnp.*
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.cache
+
+# Documentation sources that don't belong in the image
+docs/_build/
+*.md.bak
+
+# CI / build artefacts
+.github/
+.kuberns/
+deploy/
+k8s/
+
+# Tests artefacts
+coverage.xml
+.jest-cache
+playwright-report/
+test-results/

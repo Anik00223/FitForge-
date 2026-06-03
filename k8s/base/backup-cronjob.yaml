@@ -1,0 +1,77 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: fitforge-db-backup
+  labels:
+    app.kubernetes.io/name: fitforge
+    app.kubernetes.io/component: backup
+spec:
+  schedule: "0 3 * * *"
+  timeZone: "UTC"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 600
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      ttlSecondsAfterFinished: 86400
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: fitforge
+            app.kubernetes.io/component: backup
+        spec:
+          restartPolicy: OnFailure
+          automountServiceAccountToken: false
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+          containers:
+            - name: backup
+              image: fitforge:1.0.0
+              imagePullPolicy: IfNotPresent
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -euo pipefail
+                  ts=$(date -u +%Y%m%dT%H%M%SZ)
+                  out="/backups/fitforge-${ts}.sql.gz"
+                  pg_dump --no-owner --no-privileges "$DATABASE_URL" | gzip > "$out"
+                  ls -lh "$out"
+                  # Keep the 14 most-recent backups; prune older ones.
+                  ls -1t /backups/fitforge-*.sql.gz | tail -n +15 | xargs -r rm -f
+              envFrom:
+                - configMapRef: { name: fitforge-config }
+                - secretRef:    { name: fitforge-secrets }
+              resources:
+                requests: { cpu: "100m", memory: "256Mi" }
+                limits:   { cpu: "500m", memory: "512Mi" }
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities: { drop: ["ALL"] }
+              volumeMounts:
+                - name: backups
+                  mountPath: /backups
+          volumes:
+            - name: backups
+              persistentVolumeClaim:
+                claimName: fitforge-backups
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fitforge-backups
+  labels:
+    app.kubernetes.io/name: fitforge
+    app.kubernetes.io/component: backup
+spec:
+  accessModes: ["ReadWriteOnce"]
+  # On Kuberns use the default storage class; override per-overlay.
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 20Gi

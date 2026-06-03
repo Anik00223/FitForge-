@@ -1,6 +1,26 @@
 from datetime import timedelta
 
+import redis
 from django.utils import timezone
+
+
+def check_redis(url: str) -> tuple[bool, str]:
+    """Return ``(ok, detail)`` after pinging the Redis instance at ``url``.
+
+    Used by the readiness probe and any other code that needs a quick
+    canary check on the cache/broker without importing the full
+    ``django_redis`` machinery.
+    """
+    client = redis.Redis.from_url(url, socket_connect_timeout=2, socket_timeout=2)
+    try:
+        if not client.ping():
+            return False, "ping returned false"
+        return True, "ok"
+    finally:
+        try:
+            client.close()
+        except Exception:  # pragma: no cover  - cleanup best-effort
+            pass
 
 
 def calculate_bmi(weight_kg: float, height_cm: float):
