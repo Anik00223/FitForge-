@@ -1,4 +1,4 @@
-name: CI
+name: CI / CD
 
 "on":
   push:
@@ -7,12 +7,15 @@ name: CI
     branches: [main]
 
 env:
-  DJANGO_SETTINGS_MODULE: config.settings.development
+  DJANGO_SETTINGS_MODULE: config.settings.test
   SECRET_KEY: ${{ secrets.SECRET_KEY || 'ci-test-secret-key-not-for-production-use-only' }}
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/fitforge
 
 jobs:
+  # ─────────────────────────────────────────────────────────────
   lint:
-    name: Lint
+    name: Lint (ruff)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,9 +27,7 @@ jobs:
           cache: pip
 
       - name: Install linter
-        run: |
-          python -m pip install --upgrade pip
-          pip install ruff
+        run: pip install ruff
 
       - name: Ruff lint
         run: ruff check .
@@ -34,14 +35,16 @@ jobs:
       - name: Ruff format check
         run: ruff format --check .
 
+  # ─────────────────────────────────────────────────────────────
   test:
-    name: Test
+    name: Test (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
     needs: lint
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.11", "3.12"]
+
     steps:
       - uses: actions/checkout@v4
 
@@ -62,17 +65,18 @@ jobs:
       - name: Run tests with coverage
         run: |
           coverage run --source=apps,core manage.py test --verbosity=2
-          coverage report --fail-under=70
+          coverage report --fail-under=80
           coverage xml
 
-      - name: Upload coverage
+      - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
           files: ./coverage.xml
           fail_ci_if_error: false
 
+  # ─────────────────────────────────────────────────────────────
   security:
-    name: Security scan
+    name: Security scan (bandit)
     runs-on: ubuntu-latest
     needs: lint
     steps:
@@ -86,29 +90,95 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements/production.txt
-          pip install bandit
+          pip install -r requirements/production.txt bandit
 
       - name: Bandit scan
         run: bandit -r apps core config -ll
 
-  docker:
-    name: Build image
+  # ─────────────────────────────────────────────────────────────
+  build:
+    name: Build Docker image
     runs-on: ubuntu-latest
     needs: [lint, test]
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+      image_digest: ${{ steps.push.outputs.digest }}
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Buildx
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build image
+      - name: Log in to GitHub Container Registry
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build (and push on main)
+        id: push
         uses: docker/build-push-action@v6
         with:
           context: .
-          push: false
-          tags: fitforge:ci-${{ github.sha }}
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: false
+
+  # ─────────────────────────────────────────────────────────────
+  deploy-staging:
+    name: Deploy → staging
+    runs-on: ubuntu-latest
+    needs: [build, security]
+    # Only deploy from main branch pushes (not PRs)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: staging
+      url: https://staging.fitforge.app
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: "v1.29.0"
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > ~/.kube/config
+        # Secret KUBE_CONFIG_STAGING must be set in GitHub repo → Settings → Secrets
+
+      - name: Deploy to staging via Kustomize
+        env:
+          IMAGE_TAG: sha-${{ github.sha }}
+        run: |
+          kubectl kustomize k8s/overlays/staging | \
+            sed "s|fitforge:latest|ghcr.io/${{ env.IMAGE_NAME }}:${IMAGE_TAG}|g" | \
+            kubectl apply -f -
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/fitforge-web -n fitforge-staging --timeout=300s
+          kubectl rollout status deployment/fitforge-worker -n fitforge-staging --timeout=300s
+
+      - name: Smoke test staging
+        run: |
+          sleep 10
+          curl --fail https://staging.fitforge.app/livez || exit 1
+          curl --fail https://staging.fitforge.app/readyz || exit 1

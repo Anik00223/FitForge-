@@ -39,7 +39,9 @@ INSTALLED_APPS = [
     "rest_framework",
     "drf_spectacular",
     "django_celery_beat" if config("USE_CELERY_BEAT", default=False, cast=bool) else None,
+    "django_celery_results",
     "django_prometheus",
+    "axes",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -65,6 +67,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "axes.middleware.AxesMiddleware",  # must be after AuthenticationMiddleware
     "core.supabase_auth.SupabaseAuthMiddleware",
     "core.middleware.RequestIDMiddleware",
     "core.middleware.SecurityHeadersMiddleware",
@@ -75,6 +78,8 @@ MIDDLEWARE = [
 ]
 
 AUTHENTICATION_BACKENDS = [
+    # axes must be first to intercept locked-out accounts
+    "axes.backends.AxesStandaloneBackend",
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
@@ -218,16 +223,18 @@ SUPABASE_SERVICE_ROLE_KEY = config("SUPABASE_SERVICE_ROLE_KEY", default="")
 # ---------------------------------------------------------------------------
 SITE_ID = 1
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
-ACCOUNT_AUTHENTICATION_METHOD = "email"
-ACCOUNT_EMAIL_REQUIRED = True
+# Updated from deprecated ACCOUNT_AUTHENTICATION_METHOD
+ACCOUNT_LOGIN_METHODS = {"email"}
+# Updated from deprecated ACCOUNT_EMAIL_REQUIRED / ACCOUNT_USERNAME_REQUIRED
+ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_EMAIL_VERIFICATION = config("ACCOUNT_EMAIL_VERIFICATION", default="optional")
 ACCOUNT_SIGNUP_REDIRECT_URL = "/profile/setup/"
 ACCOUNT_PASSWORD_RESET_REDIRECT_URL = "/accounts/login/"
 ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = "/dashboard/"
 SOCIALACCOUNT_AUTO_SIGNUP = True
-SOCIALACCOUNT_LOGIN_ON_GET = True
+# FIX: was True — allows CSRF via crafted GET redirect links (django-allauth footgun)
+SOCIALACCOUNT_LOGIN_ON_GET = False
 SOCIALACCOUNT_STORE_TOKENS = True
 SOCIALACCOUNT_ADAPTER = "apps.accounts.adapters.FitForgeSocialAccountAdapter"
 
@@ -381,3 +388,18 @@ SENTRY_RELEASE = config("SENTRY_RELEASE", default="")
 # ---------------------------------------------------------------------------
 ENABLE_PROMETHEUS = config("ENABLE_PROMETHEUS", default=True, cast=bool)
 ENABLE_SILK = config("ENABLE_SILK", default=False, cast=bool)
+
+# ---------------------------------------------------------------------------
+# Celery result backend (django-celery-results)
+# ---------------------------------------------------------------------------
+CELERY_RESULT_BACKEND = "django-db"
+CELERY_CACHE_BACKEND = "django-cache"
+
+# ---------------------------------------------------------------------------
+# django-axes (brute-force protection)
+# ---------------------------------------------------------------------------
+AXES_FAILURE_LIMIT = config("AXES_FAILURE_LIMIT", default=5, cast=int)
+AXES_COOLOFF_TIME = config("AXES_COOLOFF_TIME", default=1, cast=int)  # hours
+AXES_LOCKOUT_PARAMETERS = ["username", "ip_address"]
+AXES_ENABLED = config("AXES_ENABLED", default=True, cast=bool)
+AXES_RESET_ON_SUCCESS = True

@@ -2,26 +2,26 @@
 .git
 .gitignore
 .gitattributes
+.github/
 
-# Secrets & environment
+# Secrets & environment — NEVER bake into the image
 .env
 .env.*
 !.env.example
 !.env.docker.example
-!.env.showcase
 *.pem
 *.key
 *.crt
 
 # Python
-.venv
-venv
-__pycache__
+.venv/
+venv/
+__pycache__/
 *.pyc
 *.pyo
 *.pyd
 *.pdb
-.pytest_cache
+.pytest_cache/
 .coverage
 .coverage.*
 htmlcov/
@@ -32,8 +32,8 @@ htmlcov/
 .pytype/
 pip-wheel-metadata/
 *.egg-info/
-build/
 dist/
+build/
 
 # Django
 db.sqlite3
@@ -43,15 +43,17 @@ media/
 local_settings.py
 
 # Local dev helpers
-.docker-config
-.pyuser
+.docker-config/
+.pyuser/
 scripts/backups/
 
 # Frontend / node
-node_modules
-.npm
-.yarn
+node_modules/
+.npm/
+.yarn/
 .pnp.*
+.next/
+dist/
 
 # Editor / OS
 .idea/
@@ -61,20 +63,19 @@ Thumbs.db
 *.swp
 *.swo
 *~
-.cache
+.cache/
 
-# Documentation sources that don't belong in the image
+# Documentation sources
 docs/_build/
 *.md.bak
 
-# CI / build artefacts
-.github/
+# CI / Kubernetes manifests (not needed in runtime image)
+k8s/
 .kuberns/
 deploy/
-k8s/
 
-# Tests artefacts
+# Test artefacts
 coverage.xml
-.jest-cache
+.jest-cache/
 playwright-report/
 test-results/

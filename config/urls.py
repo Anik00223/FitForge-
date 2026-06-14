@@ -22,6 +22,8 @@ urlpatterns = [
     path("livez", livez, name="livez"),
     path("readyz", readyz, name="readyz"),
     path("healthz", healthz, name="healthz"),
+    # SEO
+    path("robots.txt", include("core.robots_urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # Prometheus exposition endpoint.  Only mounted when the optional
@@ -34,8 +36,6 @@ if getattr(settings, "ENABLE_PROMETHEUS", True):
     except ImportError:  # pragma: no cover
         pass
 
-handler404 = "core.views.error_404"
-handler500 = "core.views.error_500"
-
+# Custom error handlers (defined once — previously duplicated)
 handler404 = "core.views.error_404"
 handler500 = "core.views.error_500"

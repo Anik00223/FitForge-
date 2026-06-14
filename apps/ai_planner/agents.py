@@ -1,11 +1,30 @@
-import time
+"""NVIDIA NIM (OpenAI-compatible) agents for FitForge AI plan generation.
+
+Three specialised system prompts drive three distinct plan types:
+    - ``generate_diet_plan``     → 7-day Indian meal plan
+    - ``generate_fitness_plan``  → 7-day training plan
+    - ``generate_combined_plan`` → Combined diet + fitness
+    - ``answer_followup``        → Contextual Q&A on an existing plan
+
+Retry strategy: up to 3 attempts with exponential back-off on transient
+errors (timeouts, rate limits).  Permanent API errors are raised
+immediately so Celery's retry mechanism can decide whether to retry at
+the task level.
+"""
+from __future__ import annotations
+
 import logging
+import time
+
 from django.conf import settings
-from openai import OpenAI, APIError, APITimeoutError, RateLimitError
+from openai import APIError, APITimeoutError, OpenAI, RateLimitError
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("fitforge.agents")
 
 
+# ---------------------------------------------------------------------------
+# System prompts
+# ---------------------------------------------------------------------------
 DIET_SYSTEM = """
 You are FitForge Diet Specialist, a direct evidence-based nutrition planner.
 Build detailed 7-day meal plans using concrete food names and measurable portions.
@@ -30,14 +49,37 @@ the training load. Be specific, practical, and human.
 """.strip()
 
 
-def _client():
+# ---------------------------------------------------------------------------
+# Internal helpers
+# ---------------------------------------------------------------------------
+def _client() -> OpenAI:
     if not settings.NVIDIA_API_KEY:
         raise ValueError("NVIDIA_API_KEY is missing. Add it to your .env file.")
     return OpenAI(base_url=settings.NVIDIA_BASE_URL, api_key=settings.NVIDIA_API_KEY)
 
 
-def _run_agent(system_prompt: str, prompt: str, max_retries: int = 1) -> str:
+def _run_agent(
+    system_prompt: str,
+    prompt: str,
+    max_retries: int = 3,          # FIX: was 1 (= zero retries)
+) -> str:
+    """Call the NVIDIA NIM API with retry/back-off.
+
+    Args:
+        system_prompt: The agent's role definition.
+        prompt:        The user-facing request.
+        max_retries:   Total attempts (not extra retries).  Defaults to 3.
+
+    Returns:
+        The assistant's response text, stripped of leading/trailing whitespace.
+
+    Raises:
+        APIError: On a non-retriable API error (bad auth, invalid model, etc.).
+        APITimeoutError | RateLimitError: After exhausting all retries.
+    """
     client = _client()
+    last_exc: Exception | None = None
+
     for attempt in range(max_retries):
         try:
             response = client.chat.completions.create(
@@ -48,61 +90,84 @@ def _run_agent(system_prompt: str, prompt: str, max_retries: int = 1) -> str:
                 ],
                 temperature=0.55,
                 top_p=0.9,
-                timeout=45.0,  # 45 second timeout for fast model
+                timeout=120.0,   # generous for 70B model
             )
             return response.choices[0].message.content.strip()
-        except (APITimeoutError, RateLimitError) as e:
-            if attempt == max_retries - 1:
-                logger.error(f"NVIDIA API failed after {max_retries} attempts: {str(e)}")
+
+        except (APITimeoutError, RateLimitError) as exc:
+            last_exc = exc
+            if attempt < max_retries - 1:
+                delay = 2 ** attempt  # 1 s → 2 s → 4 s
+                logger.warning(
+                    "NVIDIA API transient error (attempt %d/%d), retrying in %ds: %s",
+                    attempt + 1, max_retries, delay, exc,
+                )
+                time.sleep(delay)
+            else:
+                logger.error(
+                    "NVIDIA API failed after %d attempts: %s", max_retries, exc
+                )
                 raise
-            time.sleep(2 ** attempt)  # Exponential backoff
-        except APIError as e:
-            logger.error(f"NVIDIA API Error: {str(e)}")
+
+        except APIError as exc:
+            # Permanent error — don't retry, surface immediately.
+            logger.error("NVIDIA API permanent error: %s", exc)
             raise
 
+    # Should be unreachable, but keeps type-checkers happy.
+    raise last_exc  # type: ignore[misc]
 
+
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
 def generate_diet_plan(user_data: dict) -> str:
     try:
-        prompt = _build_diet_prompt(user_data)
-        return _run_agent(DIET_SYSTEM, prompt)
-    except Exception as e:
-        return f"Diet plan generation failed: {str(e)}"
+        return _run_agent(DIET_SYSTEM, _build_diet_prompt(user_data))
+    except Exception as exc:
+        logger.exception("generate_diet_plan failed")
+        raise RuntimeError(f"Diet plan generation failed: {exc}") from exc
 
 
 def generate_fitness_plan(user_data: dict) -> str:
     try:
-        prompt = _build_fitness_prompt(user_data)
-        return _run_agent(FITNESS_SYSTEM, prompt)
-    except Exception as e:
-        return f"Fitness plan generation failed: {str(e)}"
+        return _run_agent(FITNESS_SYSTEM, _build_fitness_prompt(user_data))
+    except Exception as exc:
+        logger.exception("generate_fitness_plan failed")
+        raise RuntimeError(f"Fitness plan generation failed: {exc}") from exc
 
 
 def generate_combined_plan(user_data: dict) -> str:
     try:
-        prompt = _build_combined_prompt(user_data)
-        return _run_agent(TEAM_SYSTEM, prompt)
-    except Exception as e:
-        return f"Combined plan generation failed: {str(e)}"
+        return _run_agent(TEAM_SYSTEM, _build_combined_prompt(user_data))
+    except Exception as exc:
+        logger.exception("generate_combined_plan failed")
+        raise RuntimeError(f"Combined plan generation failed: {exc}") from exc
 
 
 def answer_followup(plan_content: str, question: str, plan_type: str) -> str:
+    if plan_type == "diet":
+        system_prompt = DIET_SYSTEM
+    elif plan_type == "fitness":
+        system_prompt = FITNESS_SYSTEM
+    else:
+        system_prompt = TEAM_SYSTEM
+
+    prompt = (
+        f"The user has this existing FitForge plan:\n\n{plan_content}\n\n"
+        f"They are asking this follow-up question:\n{question}\n\n"
+        "Answer specifically based on their plan. Be concise, practical, and avoid disclaimers."
+    )
     try:
-        if plan_type == "diet":
-            system_prompt = DIET_SYSTEM
-        elif plan_type == "fitness":
-            system_prompt = FITNESS_SYSTEM
-        else:
-            system_prompt = TEAM_SYSTEM
-        prompt = (
-            f"The user has this existing FitForge plan:\n\n{plan_content}\n\n"
-            f"They are asking this follow-up question:\n{question}\n\n"
-            "Answer specifically based on their plan. Be concise, practical, and avoid disclaimers."
-        )
         return _run_agent(system_prompt, prompt)
-    except Exception as e:
-        return f"Could not answer question: {str(e)}"
+    except Exception as exc:
+        logger.exception("answer_followup failed")
+        raise RuntimeError(f"Could not answer question: {exc}") from exc
 
 
+# ---------------------------------------------------------------------------
+# Prompt builders
+# ---------------------------------------------------------------------------
 def _build_diet_prompt(d: dict) -> str:
     return f"""Generate a complete personalized 7-day Indian diet plan.
 

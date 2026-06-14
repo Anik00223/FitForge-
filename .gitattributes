@@ -1,0 +1,32 @@
+# Force LF line endings for all text files — avoids CRLF warnings on Windows
+# and ensures Docker / CI builds work correctly.
+* text=auto eol=lf
+
+# Binary files — never transform
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.gz binary
+*.zip binary
+*.whl binary
+*.pyc binary
+
+# Specific file overrides
+Makefile text eol=lf
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.py text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+*.env.example text eol=lf
+Dockerfile text eol=lf
+.dockerignore text eol=lf
+.gitignore text eol=lf

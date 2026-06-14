@@ -9,6 +9,7 @@ SHELL := /usr/bin/env bash
 PY    := .venv/bin/python
 PIP   := .venv/bin/pip
 MANAGE := $(PY) manage.py
+COVERAGE_THRESHOLD := 80
 
 # Allow ``make manage ARGS='migrate'`` to invoke manage.py with extras.
 ifeq ($(OS),Windows_NT)
@@ -21,10 +22,10 @@ endif
 
 .PHONY: help
 help: ## Show this help.
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 .PHONY: install
-install: ## Install dev dependencies into the active venv.
+install: ## Install dev + test dependencies into the active venv.
 	$(PIP) install --upgrade pip
 	$(PIP) install -r requirements/development.txt
 	$(PIP) install -r requirements/test.txt
@@ -41,14 +42,29 @@ makemigrations: ## Generate new migration files.
 runserver: ## Start the Django dev server.
 	$(MANAGE) runserver 0.0.0.0:8000
 
+.PHONY: worker
+worker: ## Start the Celery worker (requires Redis running).
+	celery -A config worker -l INFO --concurrency=2
+
 .PHONY: test
-test: ## Run the test suite with coverage.
+test: ## Run the test suite with coverage (fails under $(COVERAGE_THRESHOLD)%).
+	DJANGO_SETTINGS_MODULE=config.settings.test \
 	coverage run --source=apps,core $(MANAGE) test --verbosity=2
-	coverage report --fail-under=70
+	coverage report --fail-under=$(COVERAGE_THRESHOLD)
+
+.PHONY: test-fast
+test-fast: ## Run tests without coverage (faster feedback loop).
+	DJANGO_SETTINGS_MODULE=config.settings.test $(MANAGE) test --verbosity=1
+
+.PHONY: coverage-html
+coverage-html: ## Generate HTML coverage report and open it.
+	DJANGO_SETTINGS_MODULE=config.settings.test \
+	coverage run --source=apps,core $(MANAGE) test
+	coverage html
+	open htmlcov/index.html 2>/dev/null || start htmlcov\index.html
 
 .PHONY: lint
 lint: ## Run ruff lint and format checks.
-	$(PIP) install ruff
 	ruff check .
 	ruff format --check .
 
@@ -65,6 +81,10 @@ collectstatic: ## Collect static files into STATIC_ROOT.
 shell: ## Open a Django shell.
 	$(MANAGE) shell
 
+.PHONY: createsuperuser
+createsuperuser: ## Create a superuser interactively.
+	$(MANAGE) createsuperuser
+
 .PHONY: docker-up
 docker-up: ## Build and start the docker-compose stack.
 	docker compose up --build -d
@@ -72,6 +92,14 @@ docker-up: ## Build and start the docker-compose stack.
 .PHONY: docker-down
 docker-down: ## Stop the docker-compose stack.
 	docker compose down
+
+.PHONY: docker-logs
+docker-logs: ## Tail logs from the docker-compose stack.
+	docker compose logs -f
+
+.PHONY: docker-shell
+docker-shell: ## Open a shell in the running web container.
+	docker compose exec web bash
 
 .PHONY: k8s-validate
 k8s-validate: ## Validate the Kubernetes manifests with Kustomize.
@@ -85,3 +113,9 @@ k8s-apply-staging: ## Apply the staging overlay.
 .PHONY: k8s-apply-prod
 k8s-apply-prod: ## Apply the production overlay.
 	kubectl apply -k k8s/overlays/production
+
+.PHONY: clean
+clean: ## Remove build artefacts and caches.
+	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null; true
+	find . -type f -name "*.pyc" -delete 2>/dev/null; true
+	rm -rf .coverage htmlcov/ coverage.xml .ruff_cache/ .mypy_cache/

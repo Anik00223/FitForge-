@@ -1,10 +1,10 @@
-# ---- Environment & secrets -------------------------------------------------
+# ---- Environment & secrets ---------------------------------------------------
 .env
 .env.*
 !.env.example
 !.env.docker.example
 
-# ---- Python ----------------------------------------------------------------
+# ---- Python ------------------------------------------------------------------
 __pycache__/
 *.py[cod]
 *$py.class
@@ -27,7 +27,7 @@ wheels/
 *.egg
 MANIFEST
 
-# ---- Virtual environments --------------------------------------------------
+# ---- Virtual environments ----------------------------------------------------
 .venv/
 venv/
 env/
@@ -37,7 +37,7 @@ venv.bak/
 .pyuser/
 .python-version
 
-# ---- Django ----------------------------------------------------------------
+# ---- Django ------------------------------------------------------------------
 *.log
 *.pot
 *.pyc
@@ -47,7 +47,7 @@ db.sqlite3-journal
 staticfiles/
 media/
 
-# ---- Test / coverage -------------------------------------------------------
+# ---- Test / coverage ---------------------------------------------------------
 .coverage
 .coverage.*
 htmlcov/
@@ -63,15 +63,18 @@ dmypy-report.json
 .pytype/
 .ruff_cache/
 
-# ---- Node / frontend -------------------------------------------------------
+# ---- Node / frontend ---------------------------------------------------------
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 .pnpm-store/
+dist/
+.next/
+.nuxt/
 
-# ---- Editors / OS ----------------------------------------------------------
+# ---- Editors / OS ------------------------------------------------------------
 .idea/
 .vscode/
 *.swp
@@ -81,8 +84,9 @@ yarn-error.log*
 Thumbs.db
 *.sublime-project
 *.sublime-workspace
+desktop.ini
 
-# ---- Build / deploy artefacts ---------------------------------------------
+# ---- Build / deploy artefacts ------------------------------------------------
 *.pem
 *.key
 *.crt
@@ -96,3 +100,14 @@ backups/
 scratch/
 playwright-report/
 test-results/
+
+# ---- Docker build cache (never commit these) ---------------------------------
+.docker-config/
+.dockerignore.bak
+
+# ---- Supabase / third-party local artefacts ----------------------------------
+supabase/.temp/
+supabase/docker/
+
+# ---- Showcase / demo secrets -------------------------------------------------
+.env.showcase
