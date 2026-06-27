@@ -67,8 +67,8 @@ COPY --from=builder /install /usr/local
 # Copy application source last so dependency changes don't bust this cache.
 COPY --chown=fitforge:fitforge --from=builder /build /app
 
-# Make entrypoint executable, prepare writable runtime dirs.
-RUN chmod +x /app/docker-entrypoint.sh \
+# Make entrypoint and helper scripts executable, prepare writable runtime dirs.
+RUN chmod +x /app/docker-entrypoint.sh /app/scripts/*.sh \
  && mkdir -p /app/staticfiles /app/media \
  && chown -R fitforge:fitforge /app
 
