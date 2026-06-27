@@ -22,3 +22,4 @@ gunicorn==21.2.0
 psycopg2-binary>=2.9.9
 openai>=1.30.0
 django-axes==6.4.0
+supabase==2.30.0
