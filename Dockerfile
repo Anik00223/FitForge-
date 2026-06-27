@@ -1,13 +1,12 @@
-"""Production-grade Dockerfile for FitForge.
-
-* Multi-stage build keeps the final image small.
-* Non-root user, read-only filesystem friendly, and ``HEALTHCHECK`` is
-  duplicated at the K8s layer.
-* All build-time secrets are passed as ``--build-arg`` so they are not
-  baked into intermediate layers.
-* ``DJANGO_SETTINGS_MODULE=config.settings.production`` is the
-  default; override at runtime with the env var.
-"""
+# Production-grade Dockerfile for FitForge.
+#
+# * Multi-stage build keeps the final image small.
+# * Non-root user, read-only filesystem friendly, and ``HEALTHCHECK`` is
+#   duplicated at the K8s layer.
+# * All build-time secrets are passed as ``--build-arg`` so they are not
+#   baked into intermediate layers.
+# * ``DJANGO_SETTINGS_MODULE=config.settings.production`` is the
+#   default; override at runtime with the env var.
 # syntax=docker/dockerfile:1.7
 ARG PYTHON_VERSION=3.11
 
