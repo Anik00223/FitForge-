@@ -1,0 +1,5 @@
+# Supabase Edge Functions Configuration
+# Set verify_jwt = false for specific functions if using non-"user" auth modes (like publishable/secret/none)
+
+[functions.fitness-api]
+verify_jwt = false # Set to true if function requires "user" auth mode
