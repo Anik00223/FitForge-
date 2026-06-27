@@ -1,9 +1,22 @@
 """Development settings (DEBUG=True, local Redis optional, console email)."""
 from .base import *  # noqa: F401,F403
-
+import os
 
 DEBUG = True
 ALLOWED_HOSTS = ["*"]
+
+# --- Local SQLite override -----------------------------------------------
+# When running locally (no VPN / no Supabase tunnel), override the DATABASE_URL
+# so the dev server uses the local db.sqlite3 instead of the remote Postgres.
+# Set USE_LOCAL_DB=false in .env to use the Supabase DB instead.
+_use_local = os.environ.get("USE_LOCAL_DB", "true").lower() != "false"
+if _use_local:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",  # noqa: F405
+        }
+    }
 
 CACHES = {
     "default": {

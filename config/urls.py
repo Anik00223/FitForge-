@@ -39,3 +39,10 @@ if getattr(settings, "ENABLE_PROMETHEUS", True):
 # Custom error handlers (defined once — previously duplicated)
 handler404 = "core.views.error_404"
 handler500 = "core.views.error_500"
+
+# Optional debug toolbar
+if "debug_toolbar" in settings.INSTALLED_APPS:
+    import debug_toolbar
+    urlpatterns = [
+        path("__debug__/", include(debug_toolbar.urls)),
+    ] + urlpatterns
