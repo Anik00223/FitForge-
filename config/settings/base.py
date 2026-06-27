@@ -111,15 +111,30 @@ else:
 # ---------------------------------------------------------------------------
 # Cache, sessions, broker
 # ---------------------------------------------------------------------------
-REDIS_URL = config("REDIS_URL", default="redis://localhost:6379/0")
+REDIS_URL = config("REDIS_URL", default="")
 
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": REDIS_URL,
-        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
+if REDIS_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": REDIS_URL,
+            "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
+        }
     }
-}
+    CELERY_BROKER_URL = config("CELERY_BROKER_URL", default=REDIS_URL)
+    CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND", default=REDIS_URL)
+else:
+    # Safe fallback if Redis is not configured or disabled (e.g. Render dry runs or free tiers)
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "fitforge-fallback-cache",
+        }
+    }
+    CELERY_TASK_ALWAYS_EAGER = True
+    CELERY_TASK_EAGER_PROPAGATES = True
+    CELERY_BROKER_URL = ""
+    CELERY_RESULT_BACKEND = ""
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
@@ -128,11 +143,6 @@ SESSION_SAVE_EVERY_REQUEST = False
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_HTTPONLY = True
 
-# ---------------------------------------------------------------------------
-# Celery
-# ---------------------------------------------------------------------------
-CELERY_BROKER_URL = config("CELERY_BROKER_URL", default=REDIS_URL)
-CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND", default=REDIS_URL)
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_ACCEPT_CONTENT = ["json"]
