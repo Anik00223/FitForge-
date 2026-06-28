@@ -46,6 +46,9 @@ STORAGES = {
     },
 }
 
+WHITENOISE_MANIFEST_STRICT = False
+
+
 
 # ---------------------------------------------------------------------------
 # Sentry initialisation (no-op if DSN is empty)
