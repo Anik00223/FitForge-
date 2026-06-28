@@ -8,11 +8,14 @@ if [[ -f "/app/scripts/wait_for_deps.sh" ]]; then
     /app/scripts/wait_for_deps.sh
 fi
 
-# Apply database migrations during container start-up (only for gunicorn web process)
+# Apply database migrations and collect static files during container start-up (only for gunicorn web process)
 if [[ "${1:-}" == "gunicorn" ]]; then
     echo "Applying database migrations..."
     python manage.py migrate --noinput
+    echo "Collecting static files..."
+    python manage.py collectstatic --noinput
 fi
+
 
 # Run the CMD instruction passed by Docker/Kubernetes/Render
 exec "$@"
