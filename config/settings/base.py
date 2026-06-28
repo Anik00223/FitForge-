@@ -92,6 +92,8 @@ ASGI_APPLICATION = "config.asgi.application"
 # Database
 # ---------------------------------------------------------------------------
 DATABASE_URL = config("DATABASE_URL", default="")
+DB_HOST = config("DB_HOST", default="")
+
 if DATABASE_URL:
     DATABASES = {
         "default": dj_database_url.parse(
@@ -100,6 +102,18 @@ if DATABASE_URL:
             conn_health_checks=True,
         )
     }
+elif DB_HOST:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": config("DB_NAME", default="postgres"),
+            "USER": config("DB_USER", default="postgres"),
+            "PASSWORD": config("DB_PASSWORD", default=""),
+            "HOST": DB_HOST,
+            "PORT": config("DB_PORT", default="5432"),
+            "CONN_MAX_AGE": 600,
+        }
+    }
 else:
     DATABASES = {
         "default": {
@@ -107,6 +121,7 @@ else:
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+
 
 # ---------------------------------------------------------------------------
 # Cache, sessions, broker
