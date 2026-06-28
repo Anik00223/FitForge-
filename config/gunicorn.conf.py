@@ -43,9 +43,10 @@ def when_ready(server):
     server.log.info("fitforge is online: %s workers x %s threads", workers, threads)
 
 
-def worker_int(server, worker):
-    server.log.info("worker %s received SIGINT/SIGTERM", worker.pid)
+def worker_int(worker):
+    worker.log.info("worker %s received SIGINT/SIGTERM", worker.pid)
 
 
-def worker_abort(server, worker):
-    server.log.warning("worker %s aborted", worker.pid)
+def worker_abort(worker):
+    worker.log.warning("worker %s aborted", worker.pid)
+
