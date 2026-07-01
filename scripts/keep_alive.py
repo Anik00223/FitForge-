@@ -2,7 +2,7 @@ import time
 import requests
 from datetime import datetime
 
-URL = "https://fitforge-main-040f867.kuberns.cloud/livez"
+URL = "https://fitforge-r67t.onrender.com/livez"
 INTERVAL = 300  # 5 minutes in seconds
 
 print(f"Starting server keep-alive ping loop for {URL}...")
