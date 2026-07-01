@@ -17,7 +17,7 @@ from .base import *  # noqa: F401,F403
 from .base import SENTRY_DSN, SENTRY_TRACES_SAMPLE_RATE, SENTRY_SEND_DEFAULT_PII, SENTRY_PROFILES_SAMPLE_RATE, SENTRY_ENVIRONMENT, SENTRY_RELEASE  # noqa: F401
 
 
-DEBUG = True
+DEBUG = config("DEBUG", default=False, cast=bool)
 
 # ---------------------------------------------------------------------------
 # Security headers

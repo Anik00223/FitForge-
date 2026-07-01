@@ -23,7 +23,7 @@ def signup_view(request):
 def login_view(request):
     if request.user.is_authenticated:
         return redirect("dashboard")
-    form = LoginForm(request.POST or None)
+    form = LoginForm(request.POST or None, request=request)
     if request.method == "POST" and form.is_valid():
         login(request, form.cleaned_data["user"], backend="django.contrib.auth.backends.ModelBackend")
         return redirect("dashboard")

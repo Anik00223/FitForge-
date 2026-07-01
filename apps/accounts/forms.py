@@ -40,12 +40,16 @@ class LoginForm(forms.Form):
     email = forms.EmailField()
     password = forms.CharField(widget=forms.PasswordInput)
 
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request", None)
+        super().__init__(*args, **kwargs)
+
     def clean(self):
         cleaned = super().clean()
         email = cleaned.get("email", "").lower()
         password = cleaned.get("password")
         if email and password:
-            user = authenticate(username=email, password=password)
+            user = authenticate(self.request, username=email, password=password)
             if user is None:
                 raise forms.ValidationError("Invalid credentials.")
             cleaned["user"] = user
