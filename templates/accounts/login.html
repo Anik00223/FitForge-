@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load socialaccount %}
 
 {% block title %}Login - FitForge{% endblock %}
 
@@ -11,21 +10,6 @@
       <p class="eyebrow justify-content-center">Welcome Back</p>
       <h1 class="page-title text-center" style="font-size: 36px;">Enter the <span>Forge</span></h1>
       
-      <!-- Social Login Buttons
-      <div class="mt-4 mb-4">
-        <a href="{% provider_login_url 'google' %}" class="btn btn-social btn-google">
-          <i class="fa-brands fa-google"></i> Continue with Google
-        </a>
-        <a href="{% provider_login_url 'microsoft' %}" class="btn btn-social btn-microsoft">
-          <i class="fa-brands fa-microsoft"></i> Continue with Microsoft
-        </a>
-        <a href="{% provider_login_url 'apple' %}" class="btn btn-social btn-apple">
-          <i class="fa-brands fa-apple"></i> Continue with Apple
-        </a>
-      </div>
-      -->
-
-      <div class="divider"><span>or login with email</span></div>
 
       <form method="post" novalidate>
         {% csrf_token %}
