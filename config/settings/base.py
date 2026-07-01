@@ -152,7 +152,7 @@ else:
     CELERY_BROKER_URL = ""
     CELERY_RESULT_BACKEND = ""
 
-SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_ENGINE = "django.contrib.sessions.backends.cache" if REDIS_URL else "django.contrib.sessions.backends.db"
 SESSION_CACHE_ALIAS = "default"
 SESSION_COOKIE_AGE = 86400 * 7
 SESSION_SAVE_EVERY_REQUEST = False
